@@ -13,5 +13,4 @@ public class ProviderTest
     bootstrap.getAutowirer().autowireBean(this);
   }
 
-
 }
