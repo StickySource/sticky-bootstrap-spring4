@@ -1,4 +1,4 @@
-package net.stickycode.bootstrap.spring3;
+package net.stickycode.bootstrap.spring4;
 
 import net.stickycode.stereotype.StickyDomain;
 
