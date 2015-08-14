@@ -8,24 +8,25 @@ import org.springframework.stereotype.Component;
 
 import net.stickycode.bootstrap.StickyBootstrap;
 import net.stickycode.stereotype.StickyComponent;
+import net.stickycode.stereotype.StickyDomain;
 import net.stickycode.stereotype.StickyPlugin;
 
-public class SpringStickyBootstrap
+public class Spring4StickyBootstrap
     implements StickyBootstrap {
 
   private GenericApplicationContext context;
 
-  public SpringStickyBootstrap() {
+  public Spring4StickyBootstrap() {
     this.context = new GenericApplicationContext();
     scan("net.stickycode");
   }
 
-  public SpringStickyBootstrap(GenericApplicationContext context) {
+  public Spring4StickyBootstrap(GenericApplicationContext context) {
     this.context = context;
     scan("net.stickycode");
   }
 
-  public SpringStickyBootstrap(String... paths) {
+  public Spring4StickyBootstrap(String... paths) {
     this(new GenericApplicationContext());
     if (paths != null && paths.length > 0)
       scan(paths);
@@ -35,6 +36,7 @@ public class SpringStickyBootstrap
     ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(context, false);
     scanner.setScopeMetadataResolver(new StickyScopeMetadataResolver());
     scanner.addIncludeFilter(new AnnotationTypeFilter(StickyComponent.class));
+    scanner.addIncludeFilter(new AnnotationTypeFilter(StickyDomain.class));
     scanner.addIncludeFilter(new AnnotationTypeFilter(StickyPlugin.class));
     scanner.addIncludeFilter(new AnnotationTypeFilter(Component.class));
     scanner.scan(paths);
@@ -49,8 +51,9 @@ public class SpringStickyBootstrap
   }
 
   @Override
-  public void inject(Object value) {
+  public StickyBootstrap inject(Object value) {
     getAutowirer().autowireBean(value);
+    return this;
   }
 
   @Override

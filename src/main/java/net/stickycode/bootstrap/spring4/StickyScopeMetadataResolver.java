@@ -16,8 +16,11 @@ public class StickyScopeMetadataResolver
     ScopeMetadata metadata = new ScopeMetadata();
     if (definition instanceof AnnotatedBeanDefinition) {
       AnnotatedBeanDefinition annDef = (AnnotatedBeanDefinition) definition;
-      if (annDef.getMetadata().hasMetaAnnotation(StickyDomain.class.getName())) {
-        metadata.setScopeName("request");
+      if (annDef.getMetadata().hasAnnotation(StickyDomain.class.getName())) {
+        metadata.setScopeName("prototype");
+      }
+      else if (annDef.getMetadata().hasMetaAnnotation(StickyDomain.class.getName())) {
+        metadata.setScopeName("prototype");
       }
       else {
         metadata.setScopeName("singleton");
