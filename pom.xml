@@ -11,7 +11,7 @@
 
 	<groupId>net.stickycode.bootstrap</groupId>
 	<artifactId>sticky-bootstrap-spring4</artifactId>
-	<version>1.3-SNAPSHOT</version>
+	<version>1.4-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>sticky-bootstrap-spring4-2</name>
