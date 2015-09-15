@@ -9,9 +9,7 @@ import org.springframework.context.ApplicationContext;
 
 import net.stickycode.bootstrap.BeanNotFoundFailure;
 import net.stickycode.bootstrap.ComponentContainer;
-import net.stickycode.stereotype.StickyComponent;
 
-@StickyComponent
 public class SpringComponentContainer
     implements ComponentContainer {
 
@@ -46,5 +44,4 @@ public class SpringComponentContainer
   public boolean canFind(Class<?> type) {
     return factory.getBeanNamesForType(type).length > 0;
   }
-
 }

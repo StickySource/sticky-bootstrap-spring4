@@ -15,6 +15,7 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.stereotype.Component;
 
 import net.stickycode.bootstrap.StickyBootstrap;
+import net.stickycode.bootstrap.StickySystemStartup;
 import net.stickycode.stereotype.StickyComponent;
 import net.stickycode.stereotype.StickyDomain;
 import net.stickycode.stereotype.StickyPlugin;
@@ -26,14 +27,13 @@ public class Spring4StickyBootstrap
 
   private GenericApplicationContext context;
 
-  public Spring4StickyBootstrap() {
-    this.context = new GenericApplicationContext();
-    scan("net.stickycode");
-  }
-
   public Spring4StickyBootstrap(GenericApplicationContext context) {
     this.context = context;
-    scan("net.stickycode");
+    registerType("componentContainer", SpringComponentContainer.class);
+  }
+
+  public Spring4StickyBootstrap() {
+    this(new GenericApplicationContext());
   }
 
   public Spring4StickyBootstrap(String... paths) {
@@ -44,22 +44,28 @@ public class Spring4StickyBootstrap
 
   @Override
   public StickyBootstrap scan(String... paths) {
-    ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(context, false);
-    scanner.setScopeMetadataResolver(new StickyScopeMetadataResolver());
-    scanner.addIncludeFilter(new AnnotationTypeFilter(StickyComponent.class));
-    scanner.addIncludeFilter(new AnnotationTypeFilter(StickyPlugin.class));
-    scanner.addIncludeFilter(new AnnotationTypeFilter(StickyDomain.class));
-    scanner.addIncludeFilter(new AnnotationTypeFilter(Component.class));
-    scanner.addIncludeFilter(new AnnotationTypeFilter(Singleton.class));
-    scanner.scan(paths);
+    if (paths.length > 0) {
+      ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(context, false);
+      scanner.setScopeMetadataResolver(new StickyScopeMetadataResolver());
+      scanner.addIncludeFilter(new AnnotationTypeFilter(StickyComponent.class));
+      scanner.addIncludeFilter(new AnnotationTypeFilter(StickyPlugin.class));
+      scanner.addIncludeFilter(new AnnotationTypeFilter(StickyDomain.class));
+      scanner.addIncludeFilter(new AnnotationTypeFilter(Component.class));
+      scanner.addIncludeFilter(new AnnotationTypeFilter(Singleton.class));
+      scanner.scan(paths);
+    }
     return this;
   }
 
   public AutowireCapableBeanFactory getAutowirer() {
+    return getContext().getAutowireCapableBeanFactory();
+  }
+
+  private GenericApplicationContext getContext() {
     if (!context.isActive())
       context.refresh();
 
-    return context.getAutowireCapableBeanFactory();
+    return context;
   }
 
   @Override
@@ -70,7 +76,7 @@ public class Spring4StickyBootstrap
 
   @Override
   public <T> T find(Class<T> type) {
-    return context.getBean(type);
+    return getContext().getBean(type);
   }
 
   @Override
@@ -104,6 +110,9 @@ public class Spring4StickyBootstrap
 
   @Override
   public void shutdown() {
+    if (canFind(StickySystemStartup.class))
+      find(StickySystemStartup.class).shutdown();
+
     context.close();
   }
 
@@ -115,11 +124,19 @@ public class Spring4StickyBootstrap
 
   @Override
   public void extend(Object extension) {
+    if (extension instanceof Class) {
+      @SuppressWarnings("rawtypes")
+      Class type = (Class) extension;
+      registerType(type.getSimpleName(), type);
+    }
+    else
+      registerSingleton(extension.getClass().getSimpleName(), extension, extension.getClass());
   }
 
   @Override
   public void start() {
-    context.refresh();
+    if (canFind(StickySystemStartup.class))
+      find(StickySystemStartup.class).start();
   }
 
 }
