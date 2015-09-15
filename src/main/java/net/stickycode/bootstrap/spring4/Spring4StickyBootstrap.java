@@ -117,4 +117,9 @@ public class Spring4StickyBootstrap
   public void extend(Object extension) {
   }
 
+  @Override
+  public void start() {
+    context.refresh();
+  }
+
 }
