@@ -2,6 +2,7 @@ package net.stickycode.bootstrap.spring4;
 
 import java.util.Collection;
 
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.slf4j.Logger;
@@ -138,5 +139,8 @@ public class Spring4StickyBootstrap
     if (canFind(StickySystemStartup.class))
       find(StickySystemStartup.class).start();
   }
-
+  @Override
+  public void registerProvider(String name, Provider<Object> provider, Class<?> type) {
+    context.getBeanFactory().registerSingleton(name, new FactoryBeanProviderAdapter(provider, type));
+  }
 }
