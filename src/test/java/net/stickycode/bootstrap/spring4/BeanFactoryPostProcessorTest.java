@@ -1,6 +1,6 @@
 package net.stickycode.bootstrap.spring4;
 
-import static org.assertj.core.api.StrictAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.inject.Inject;
 
@@ -13,6 +13,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import net.stickycode.bootstrap.StickyBootstrap;
 
 public class BeanFactoryPostProcessorTest {
+
   public class Example {
 
     private String value;

@@ -7,10 +7,12 @@ import javax.inject.Singleton;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
+import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.stereotype.Component;
@@ -30,6 +32,15 @@ public class Spring4StickyBootstrap
 
   public Spring4StickyBootstrap(GenericApplicationContext context) {
     this.context = context;
+
+    AutowiredAnnotationBeanPostProcessor inject = new AutowiredAnnotationBeanPostProcessor();
+    inject.setBeanFactory(context.getDefaultListableBeanFactory());
+    context.getBeanFactory().addBeanPostProcessor(inject);
+
+    CommonAnnotationBeanPostProcessor commonPostProcessor = new CommonAnnotationBeanPostProcessor();
+    commonPostProcessor.setBeanFactory(context.getDefaultListableBeanFactory());
+    context.getBeanFactory().addBeanPostProcessor(commonPostProcessor);
+
     registerType("componentContainer", SpringComponentContainer.class);
   }
 
@@ -93,11 +104,12 @@ public class Spring4StickyBootstrap
   @Override
   public void registerSingleton(String beanName, Object bean, Class<?> type) {
     log.debug("registering bean '{}' of type '{}'", beanName, type.getName());
+    context.getAutowireCapableBeanFactory().autowireBean(bean);
     context.getBeanFactory().initializeBean(bean, beanName);
     context.getBeanFactory().registerSingleton(beanName, bean);
     // beans that get pushed straight into the context need to be attached to destructive bean post processors
     context.getDefaultListableBeanFactory().registerDisposableBean(
-        beanName, new DisposableBeanAdapter(bean, beanName, context));
+      beanName, new DisposableBeanAdapter(bean, beanName, context));
   }
 
   @Override
@@ -111,7 +123,7 @@ public class Spring4StickyBootstrap
 
   @Override
   public void shutdown() {
-    if (context.isRunning())
+    if (context.isActive())
       if (canFind(StickySystemStartup.class))
         find(StickySystemStartup.class).shutdown();
 
@@ -140,6 +152,7 @@ public class Spring4StickyBootstrap
     if (canFind(StickySystemStartup.class))
       find(StickySystemStartup.class).start();
   }
+
   @Override
   public void registerProvider(String name, Provider<Object> provider, Class<?> type) {
     context.getBeanFactory().registerSingleton(name, new FactoryBeanProviderAdapter(provider, type));
